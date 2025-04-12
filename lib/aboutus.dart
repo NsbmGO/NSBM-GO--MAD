@@ -10,7 +10,7 @@ class AboutUsScreen extends StatefulWidget {
 }
 
 class _AboutUsScreenState extends State<AboutUsScreen> {
-  int _selectedIndex = 3; // Faculties tab is selected (index 3)
+  int _selectedIndex = 3;
 
   void _onItemTapped(int index) {
     if (index == 0) {
@@ -32,7 +32,6 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
       );
       return;
     } else if (index == 4) {
-      // Profile tab
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ProfileScreen()),
@@ -48,34 +47,65 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Container(
-            padding: EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: Colors.green.shade200,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/logo.png', height: 100),
-                SizedBox(height: 10),
-                SizedBox(height: 10),
-                Text(
-                  'Contact Us',
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
-                ),
-                SizedBox(height: 20),
-                ContactItem(
-                  icon: Icons.location_on,
-                  text: 'Mahenwaththa, Pitipana, \nHomagama, Sri Lanka',
-                ),
-                ContactItem(icon: Icons.phone, text: '+94 11 544 5000'),
-                ContactItem(icon: Icons.phone_android, text: '+94 71 244 5000'),
-                ContactItem(icon: Icons.email, text: 'inquiries@nsbm.ac.lk'),
-              ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Text(
+                    "Contact Us",
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    padding: EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade200,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset('assets/logo.png', height: 100),
+                        SizedBox(height: 20),
+                        ContactItem(
+                          icon: Icons.location_on,
+                          text: 'Mahenwaththa, Pitipana,\nHomagama, Sri Lanka',
+                        ),
+                        ContactItem(
+                          icon: Icons.phone,
+                          text: '+94 11 544 5000',
+                        ),
+                        ContactItem(
+                          icon: Icons.phone_android,
+                          text: '+94 71 244 5000',
+                        ),
+                        ContactItem(
+                          icon: Icons.email,
+                          text: 'inquiries@nsbm.ac.lk',
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            "Send Message",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -87,43 +117,23 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/events_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/events_icon.png", height: 24, color: Colors.black),
             label: "Events",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/clubs_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/clubs_icon.png", height: 24, color: Colors.black),
             label: "Clubs",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/home_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/home_icon.png", height: 24, color: Colors.black),
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/people.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/people.png", height: 24, color: Colors.black),
             label: "About Us",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/profile_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/profile_icon.png", height: 24, color: Colors.black),
             label: "Profile",
           ),
         ],
@@ -141,16 +151,16 @@ class ContactItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.all(10),
+      margin: EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           Icon(icon, color: Colors.black54),
-          SizedBox(width: 10),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
