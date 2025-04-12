@@ -27,7 +27,10 @@ class _ClubsPageState extends State<ClubsPage> {
         leadingWidth: 150,
         leading: Padding(
           padding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
-          child: Image.asset("assets/logo.png", fit: BoxFit.contain),
+          child: Image.asset(
+            "assets/logo.png",
+            fit: BoxFit.contain,
+          ),
         ),
         centerTitle: true,
       ),
@@ -36,11 +39,9 @@ class _ClubsPageState extends State<ClubsPage> {
           _buildCategorySelector(),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream:
-                  _firestore
-                      .collection('clubs')
-                      .where('clubtype', isEqualTo: _selectedCategory)
-                      .snapshots(),
+              stream: _firestore.collection('clubs')
+                  .where('clubtype', isEqualTo: _selectedCategory)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -56,9 +57,7 @@ class _ClubsPageState extends State<ClubsPage> {
                   padding: const EdgeInsets.all(16),
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
-                    final club =
-                        snapshot.data!.docs[index].data()
-                            as Map<String, dynamic>;
+                    final club = snapshot.data!.docs[index].data() as Map<String, dynamic>;
                     return _buildClubCard(context, club);
                   },
                 );
@@ -74,43 +73,23 @@ class _ClubsPageState extends State<ClubsPage> {
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/events_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/events_icon.png", height: 24, color: Colors.black),
             label: "Events",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/clubs_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/clubs_icon.png", height: 24, color: Colors.black),
             label: "Clubs",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/home_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/home_icon.png", height: 24, color: Colors.black),
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/people.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/people.png", height: 24, color: Colors.black),
             label: "About Us",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              "assets/profile_icon.png",
-              height: 24,
-              color: Colors.black,
-            ),
+            icon: Image.asset("assets/profile_icon.png", height: 24, color: Colors.black),
             label: "Profile",
           ),
         ],
@@ -202,15 +181,16 @@ class _ClubsPageState extends State<ClubsPage> {
   }
 
   Widget _buildClubCard(BuildContext context, Map<String, dynamic> club) {
-    final createdAt =
-        club['createdAt'] != null
-            ? (club['createdAt'] as Timestamp).toDate()
-            : DateTime.now();
+    final createdAt = club['createdAt'] != null
+        ? (club['createdAt'] as Timestamp).toDate()
+        : DateTime.now();
     final formattedDate = DateFormat('dd MMM yyyy').format(createdAt);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -234,13 +214,12 @@ class _ClubsPageState extends State<ClubsPage> {
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Container(
-                        width: 80,
-                        height: 80,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.group, size: 40),
-                      ),
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 80,
+                    height: 80,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.group, size: 40),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -260,7 +239,10 @@ class _ClubsPageState extends State<ClubsPage> {
                       club['description'] ?? 'No description available',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -294,10 +276,9 @@ class ClubDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final createdAt =
-        clubData['createdAt'] != null
-            ? (clubData['createdAt'] as Timestamp).toDate()
-            : DateTime.now();
+    final createdAt = clubData['createdAt'] != null
+        ? (clubData['createdAt'] as Timestamp).toDate()
+        : DateTime.now();
     final formattedDate = DateFormat('dd MMMM yyyy').format(createdAt);
 
     return Scaffold(
@@ -320,19 +301,21 @@ class ClubDetailsPage extends StatelessWidget {
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Container(
-                        height: 200,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.group, size: 60),
-                      ),
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 200,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.group, size: 60),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 20),
             Text(
               clubData['name'] ?? 'Club Name',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Chip(
@@ -345,7 +328,10 @@ class ClubDetailsPage extends StatelessWidget {
             const SizedBox(height: 20),
             const Text(
               'Description',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -359,21 +345,15 @@ class ClubDetailsPage extends StatelessWidget {
             const SizedBox(height: 20),
             const Text(
               'Contact Information',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
-            _buildContactInfo(
-              Icons.person,
-              'Created by: ${clubData['createdBy'] ?? 'Unknown'}',
-            ),
-            _buildContactInfo(
-              Icons.email,
-              clubData['mail'] ?? 'No email provided',
-            ),
-            _buildContactInfo(
-              Icons.phone,
-              clubData['contactnumber'] ?? 'No phone number provided',
-            ),
+            _buildContactInfo(Icons.person, 'Created by: ${clubData['createdBy'] ?? 'Unknown'}'),
+            _buildContactInfo(Icons.email, clubData['mail'] ?? 'No email provided'),
+            _buildContactInfo(Icons.phone, clubData['contactnumber'] ?? 'No phone number provided'),
             if (clubData['url'] != null && clubData['url'].isNotEmpty)
               const SizedBox(height: 20),
           ],
@@ -389,7 +369,13 @@ class ClubDetailsPage extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: Colors.grey),
           const SizedBox(width: 8),
-          Text(text, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[700],
+            ),
+          ),
         ],
       ),
     );
