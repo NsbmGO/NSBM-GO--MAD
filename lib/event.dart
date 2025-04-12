@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'main.dart';
+import 'club.dart' as club_lib;
+import 'aboutus.dart' as aboutus_lib;
+import 'profile.dart';
 
 class EventDetailsPage extends StatelessWidget {
   final Map<String, dynamic> eventData;
