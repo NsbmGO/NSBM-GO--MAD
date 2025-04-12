@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'login.dart';
 
 class ClubManagerPage extends StatefulWidget {
   final Map<String, dynamic> managerData;
@@ -20,7 +20,6 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
   final TextEditingController _urlController = TextEditingController();
   bool _isLoading = false;
 
-  // Club type dropdown
   String? _selectedClubType;
   final List<String> _clubTypes = [
     'ACTIVITY BASED CLUBS',
@@ -29,7 +28,8 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
     'SPORTS CLUBS'
   ];
 
-  // Add logout method
+  List<Map<String, dynamic>> _clubs = [];
+
   void _logout() {
     Navigator.pushReplacement(
       context,
@@ -59,32 +59,30 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
 
     setState(() => _isLoading = true);
 
-    try {
-      await FirebaseFirestore.instance.collection('clubs').add({
-        'name': _nameController.text.trim(),
-        'clubtype': _selectedClubType,
-        'contactnumber': _contactController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'image': _imageController.text.trim(),
-        'mail': _mailController.text.trim(),
-        'url': _urlController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-        'createdBy': widget.managerData['name'] ?? 'Unknown Manager',
-      });
+    await Future.delayed(const Duration(milliseconds: 500)); // Simulate delay
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Club added successfully!')),
-      );
+    _clubs.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'name': _nameController.text.trim(),
+      'clubtype': _selectedClubType,
+      'contactnumber': _contactController.text.trim(),
+      'description': _descriptionController.text.trim(),
+      'image': _imageController.text.trim(),
+      'mail': _mailController.text.trim(),
+      'url': _urlController.text.trim(),
+      'createdAt': DateTime.now().toString(),
+      'createdBy': widget.managerData['name'] ?? 'Unknown Manager',
+    });
 
-      _formKey.currentState!.reset();
-      setState(() => _selectedClubType = null);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding club: ${e.toString()}')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Club added successfully!')),
+    );
+
+    _formKey.currentState!.reset();
+    setState(() {
+      _selectedClubType = null;
+      _isLoading = false;
+    });
   }
 
   Future<void> _deleteClub(String clubId, String clubName) async {
@@ -109,16 +107,13 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
     );
 
     if (confirmDelete == true) {
-      try {
-        await FirebaseFirestore.instance.collection('clubs').doc(clubId).delete();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Club deleted successfully!')),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting club: ${e.toString()}')),
-        );
-      }
+      setState(() {
+        _clubs.removeWhere((club) => club['id'] == clubId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Club deleted successfully!')),
+      );
     }
   }
 
@@ -138,7 +133,6 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Add Club Form
             Form(
               key: _formKey,
               child: Column(
@@ -187,75 +181,50 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
             const Divider(thickness: 1),
             const SizedBox(height: 16),
-
-            // Existing Clubs List
             const Text(
               'Your Clubs',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('clubs')
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Text('No clubs found');
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    var club = snapshot.data!.docs[index];
-                    var data = club.data() as Map<String, dynamic>;
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        leading: data['image'] != null && data['image'].isNotEmpty
-                            ? ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Image.network(
-                            data['image'],
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.group, size: 40),
-                          ),
-                        )
-                            : const Icon(Icons.group, size: 40),
-                        title: Text(
-                          data['name'] ?? 'No name',
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                        subtitle: Text(
-                          '${data['clubtype'] ?? ''} • ${data['contactnumber'] ?? ''}',
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                          onPressed: () => _deleteClub(club.id, data['name'] ?? 'this club'),
-                        ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _clubs.length,
+              itemBuilder: (context, index) {
+                final data = _clubs[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    leading: data['image'] != null && data['image'].isNotEmpty
+                        ? ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        data['image'],
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.group, size: 40),
                       ),
-                    );
-                  },
+                    )
+                        : const Icon(Icons.group, size: 40),
+                    title: Text(
+                      data['name'] ?? 'No name',
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                    subtitle: Text(
+                      '${data['clubtype'] ?? ''} • ${data['contactnumber'] ?? ''}',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                      onPressed: () => _deleteClub(data['id'], data['name'] ?? 'this club'),
+                    ),
+                  ),
                 );
               },
             ),
