@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
+import 'login.dart';
+import 'addevent.dart';
+import 'dart:math';
+import 'event.dart' as event_lib;
+import 'club.dart' as club_lib;
+import 'aboutus.dart' as aboutus_lib;
+import 'profile.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -31,31 +40,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 2;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Random _random = Random();
-
-  final List<Map<String, dynamic>> dummyEvents = List.generate(5, (index) {
-    return {
-      'name': 'Event ${index + 1}',
-      'dateandtime': DateTime.now().add(Duration(days: index)),
-      'venue': 'Venue ${index + 1}',
-      'description': 'This is a short description of Event ${index + 1}.',
-      'image': 'https://via.placeholder.com/400x200',
-    };
-  });
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> selectedEvents;
-    if (dummyEvents.length <= 3) {
-      selectedEvents = dummyEvents;
-    } else {
-      Set<int> randomIndices = {};
-      while (randomIndices.length < 3) {
-        randomIndices.add(_random.nextInt(dummyEvents.length));
-      }
-      selectedEvents = randomIndices.map((i) => dummyEvents[i]).toList();
-    }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -85,11 +74,46 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: selectedEvents.length,
-              itemBuilder: (context, index) {
-                final event = selectedEvents[index];
-                return _buildEventCard(context, event);
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore.collection('events').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('No events found'));
+                }
+
+                var allEvents = snapshot.data!.docs;
+
+                if (allEvents.length <= 3) {
+                  return ListView.builder(
+                    itemCount: allEvents.length,
+                    itemBuilder: (context, index) {
+                      final event =
+                          allEvents[index].data() as Map<String, dynamic>;
+                      return _buildEventCard(context, event);
+                    },
+                  );
+                }
+
+                Set<int> randomIndices = {};
+                while (randomIndices.length < 3) {
+                  randomIndices.add(_random.nextInt(allEvents.length));
+                }
+
+                return ListView.builder(
+                  itemCount: 3,
+                  itemBuilder: (context, index) {
+                    final eventIndex = randomIndices.elementAt(index);
+                    final event =
+                        allEvents[eventIndex].data() as Map<String, dynamic>;
+                    return _buildEventCard(context, event);
+                  },
+                );
               },
             ),
           ),
@@ -178,7 +202,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildEventCard(BuildContext context, Map<String, dynamic> event) {
-    final dateTime = event['dateandtime'] as DateTime;
+    final dateTime = (event['dateandtime'] as Timestamp).toDate();
     final formattedDate =
         "${dateTime.day} ${_getMonthName(dateTime.month)} ${dateTime.year}";
 
@@ -207,6 +231,12 @@ class _HomePageState extends State<HomePage> {
                   fit: BoxFit.cover,
                   height: 200,
                   width: double.infinity,
+                  errorBuilder:
+                      (context, error, stackTrace) => Image.asset(
+                        "assets/placeholder.jpg",
+                        fit: BoxFit.cover,
+                        height: 200,
+                      ),
                 ),
               ),
               Container(
