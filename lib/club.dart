@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
 import 'main.dart';
 import 'event.dart' as event_lib;
 import 'aboutus.dart' as aboutus_lib;
 import 'profile.dart';
-import 'clubmanager.dart';
 
 class ClubsPage extends StatefulWidget {
   const ClubsPage({Key? key}) : super(key: key);
@@ -14,40 +13,12 @@ class ClubsPage extends StatefulWidget {
 }
 
 class _ClubsPageState extends State<ClubsPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String _selectedCategory = 'ACTIVITY BASED CLUBS';
-  int _selectedIndex = 1;
-
-  List<Map<String, dynamic>> allClubs = [
-    {
-      'name': 'Photography Club',
-      'description': 'Capture memories and moments.',
-      'clubtype': 'ACTIVITY BASED CLUBS',
-      'image': 'https://via.placeholder.com/150',
-      'createdAt': DateTime(2024, 3, 5),
-      'createdBy': 'John Doe',
-      'mail': 'photo@club.com',
-      'contactnumber': '+1234567890',
-      'url': 'https://example.com'
-    },
-    {
-      'name': 'Global Connections',
-      'description': 'International student bonding events.',
-      'clubtype': 'INTERNATIONAL CLUBS',
-      'image': 'https://via.placeholder.com/150',
-      'createdAt': DateTime(2024, 2, 10),
-      'createdBy': 'Jane Smith',
-      'mail': 'global@club.com',
-      'contactnumber': '+9876543210',
-      'url': 'https://example.org'
-    },
-  ];
+  int _selectedIndex = 1; // Clubs is selected by default
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredClubs = allClubs
-        .where((club) => club['clubtype'] == _selectedCategory)
-        .toList();
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -67,13 +38,29 @@ class _ClubsPageState extends State<ClubsPage> {
         children: [
           _buildCategorySelector(),
           Expanded(
-            child: filteredClubs.isEmpty
-                ? const Center(child: Text('No clubs found'))
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: filteredClubs.length,
-              itemBuilder: (context, index) {
-                return _buildClubCard(context, filteredClubs[index]);
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore.collection('clubs')
+                  .where('clubtype', isEqualTo: _selectedCategory)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No clubs found'));
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final club = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                    return _buildClubCard(context, club);
+                  },
+                );
               },
             ),
           ),
@@ -111,34 +98,34 @@ class _ClubsPageState extends State<ClubsPage> {
   }
 
   void _onItemTapped(int index) {
-    if (index == _selectedIndex) return;
+    if (index == _selectedIndex) return; // Already on this page
 
     setState(() {
       _selectedIndex = index;
     });
 
     switch (index) {
-      case 0:
+      case 0: // Events
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => event_lib.NSBMHomePage()),
         );
         break;
-      case 1:
+      case 1: // Clubs - do nothing, we're already here
         break;
-      case 2:
+      case 2: // Home
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
         break;
-      case 3:
+      case 3: // Faculties
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => aboutus_lib.AboutUsScreen()),
         );
         break;
-      case 4:
+      case 4: // Profile
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => ProfileScreen()),
@@ -194,7 +181,9 @@ class _ClubsPageState extends State<ClubsPage> {
   }
 
   Widget _buildClubCard(BuildContext context, Map<String, dynamic> club) {
-    final createdAt = club['createdAt'] ?? DateTime.now();
+    final createdAt = club['createdAt'] != null
+        ? (club['createdAt'] as Timestamp).toDate()
+        : DateTime.now();
     final formattedDate = DateFormat('dd MMM yyyy').format(createdAt);
 
     return Card(
@@ -209,7 +198,7 @@ class _ClubsPageState extends State<ClubsPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ClubManagerPage(managerData: club),
+              builder: (context) => ClubDetailsPage(clubData: club),
             ),
           );
         },
@@ -277,5 +266,126 @@ class _ClubsPageState extends State<ClubsPage> {
         ),
       ),
     );
+  }
+}
+
+class ClubDetailsPage extends StatelessWidget {
+  final Map<String, dynamic> clubData;
+
+  const ClubDetailsPage({Key? key, required this.clubData}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final createdAt = clubData['createdAt'] != null
+        ? (clubData['createdAt'] as Timestamp).toDate()
+        : DateTime.now();
+    final formattedDate = DateFormat('dd MMMM yyyy').format(createdAt);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(clubData['name'] ?? 'Club Details'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  clubData['image'] ?? '',
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 200,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.group, size: 60),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              clubData['name'] ?? 'Club Name',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Chip(
+              label: Text(
+                clubData['clubtype'] ?? 'No Type',
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.green,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Description',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              clubData['description'] ?? 'No description available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Contact Information',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildContactInfo(Icons.person, 'Created by: ${clubData['createdBy'] ?? 'Unknown'}'),
+            _buildContactInfo(Icons.email, clubData['mail'] ?? 'No email provided'),
+            _buildContactInfo(Icons.phone, clubData['contactnumber'] ?? 'No phone number provided'),
+            if (clubData['url'] != null && clubData['url'].isNotEmpty)
+              const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactInfo(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[700],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

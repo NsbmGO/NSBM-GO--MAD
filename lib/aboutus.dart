@@ -10,7 +10,7 @@ class AboutUsScreen extends StatefulWidget {
 }
 
 class _AboutUsScreenState extends State<AboutUsScreen> {
-  int _selectedIndex = 3;
+  int _selectedIndex = 3; // Faculties tab is selected (index 3)
 
   void _onItemTapped(int index) {
     if (index == 0) {
@@ -32,6 +32,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
       );
       return;
     } else if (index == 4) {
+      // Profile tab
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ProfileScreen()),
@@ -71,18 +72,9 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                   icon: Icons.location_on,
                   text: 'Mahenwaththa, Pitipana, \nHomagama, Sri Lanka',
                 ),
-                ContactItem(
-                  icon: Icons.phone,
-                  text: '+94 11 544 5000',
-                ),
-                ContactItem(
-                  icon: Icons.phone_android,
-                  text: '+94 71 244 5000',
-                ),
-                ContactItem(
-                  icon: Icons.email,
-                  text: 'inquiries@nsbm.ac.lk',
-                ),
+                ContactItem(icon: Icons.phone, text: '+94 11 544 5000'),
+                ContactItem(icon: Icons.phone_android, text: '+94 71 244 5000'),
+                ContactItem(icon: Icons.email, text: 'inquiries@nsbm.ac.lk'),
               ],
             ),
           ),
@@ -95,23 +87,43 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset("assets/events_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/events_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Events",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/clubs_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/clubs_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Clubs",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/home_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/home_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/people.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/people.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "About Us",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/profile_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/profile_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Profile",
           ),
         ],
