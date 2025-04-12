@@ -1,11 +1,4 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
-import 'addevent.dart';
-import 'dart:math';
-import 'event.dart' as event_lib;
-import 'club.dart' as club_lib;
-import 'aboutus.dart' as aboutus_lib;
-import 'profile.dart';
 
 void main() {
   runApp(MyApp());
@@ -17,9 +10,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'NSBM Events',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
+      theme: ThemeData(primarySwatch: Colors.green),
       home: LoginScreen(),
       routes: {
         '/home': (context) => HomePage(),
@@ -73,10 +64,7 @@ class _HomePageState extends State<HomePage> {
         leadingWidth: 150,
         leading: Padding(
           padding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
-          child: Image.asset(
-            "assets/logo.png",
-            fit: BoxFit.contain,
-          ),
+          child: Image.asset("assets/logo.png", fit: BoxFit.contain),
         ),
         centerTitle: true,
       ),
@@ -89,8 +77,10 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Latest Events",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(
+                  "Latest Events",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),
@@ -112,23 +102,43 @@ class _HomePageState extends State<HomePage> {
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset("assets/events_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/events_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Events",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/clubs_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/clubs_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Clubs",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/home_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/home_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/people.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/people.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "About Us",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/profile_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/profile_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Profile",
           ),
         ],
@@ -169,7 +179,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildEventCard(BuildContext context, Map<String, dynamic> event) {
     final dateTime = event['dateandtime'] as DateTime;
-    final formattedDate = "${dateTime.day} ${_getMonthName(dateTime.month)} ${dateTime.year}";
+    final formattedDate =
+        "${dateTime.day} ${_getMonthName(dateTime.month)} ${dateTime.year}";
 
     return GestureDetector(
       onTap: () {
@@ -231,26 +242,17 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(height: 4),
                     Text(
                       formattedDate,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                     ),
                     SizedBox(height: 4),
                     Text(
                       event['venue'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                     ),
                     SizedBox(height: 8),
                     Text(
                       event['description'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -266,8 +268,18 @@ class _HomePageState extends State<HomePage> {
 
   String _getMonthName(int month) {
     const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
     return months[month - 1];
   }
