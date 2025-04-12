@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'main.dart';
 import 'addevent.dart';
 import 'clubmanager.dart';
-import 'login.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -19,6 +17,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  final dummyUsers = {
+    0: {'email': 'student@example.com', 'password': 'student123', 'name': 'Student A'},
+    1: {'email': 'organizer@example.com', 'password': 'organizer123', 'name': 'Organizer B'},
+    2: {'email': 'manager@example.com', 'password': 'manager123', 'name': 'Manager C'},
+  };
 
   @override
   void initState() {
@@ -63,92 +67,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       final email = _emailController.text.trim();
       final password = _passwordController.text;
 
-      String collectionName;
+      final dummy = dummyUsers[selectedUserType];
+
+      if (dummy == null || dummy['email'] != email || dummy['password'] != password) {
+        throw Exception('Invalid credentials');
+      }
+
       Widget destination;
-
-      switch (selectedUserType) {
-        case 0: // Student
-        // First authenticate with Firebase Auth
-          final authResult = await FirebaseAuth.instance.signInWithEmailAndPassword(
-            email: email,
-            password: password,
-          );
-
-          // Then get additional data from Firestore
-          final userDoc = await FirebaseFirestore.instance
-              .collection('student')
-              .doc(authResult.user?.uid)
-              .get();
-
-          if (!userDoc.exists) {
-            throw FirebaseAuthException(
-              code: 'user-not-found',
-              message: 'No student found with that email.',
-            );
-          }
-
-          final userData = userDoc.data()!;
-          destination = HomePage(studentData: userData);
-          break;
-
-        case 1: // Event Organizer
-          collectionName = 'eventorganizer';
-          final querySnapshot = await FirebaseFirestore.instance
-              .collection(collectionName)
-              .where('email', isEqualTo: email)
-              .limit(1)
-              .get();
-
-          if (querySnapshot.docs.isEmpty) {
-            throw FirebaseAuthException(
-              code: 'user-not-found',
-              message: 'No organizer found with that email.',
-            );
-          }
-
-          final userDoc = querySnapshot.docs.first;
-          final userData = userDoc.data();
-
-          if (userData['password'] != password) {
-            throw FirebaseAuthException(
-              code: 'wrong-password',
-              message: 'Incorrect password.',
-            );
-          }
-
-          destination = EventForm(organizerData: userData);
-          break;
-
-        case 2: // Club Manager
-          collectionName = 'clubmanager';
-          final querySnapshot = await FirebaseFirestore.instance
-              .collection(collectionName)
-              .where('email', isEqualTo: email)
-              .limit(1)
-              .get();
-
-          if (querySnapshot.docs.isEmpty) {
-            throw FirebaseAuthException(
-              code: 'user-not-found',
-              message: 'No club manager found with that email.',
-            );
-          }
-
-          final userDoc = querySnapshot.docs.first;
-          final userData = userDoc.data();
-
-          if (userData['password'] != password) {
-            throw FirebaseAuthException(
-              code: 'wrong-password',
-              message: 'Incorrect password.',
-            );
-          }
-
-          destination = ClubManagerPage(managerData: userData);
-          break;
-
-        default:
-          throw Exception('Invalid user type selected');
+      if (selectedUserType == 0) {
+        destination = HomePage(studentData: dummy);
+      } else if (selectedUserType == 1) {
+        destination = EventForm(organizerData: dummy);
+      } else {
+        destination = ClubManagerPage(managerData: dummy);
       }
 
       Navigator.pushReplacement(
@@ -156,21 +87,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => destination,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
           transitionDuration: Duration(milliseconds: 500),
         ),
       );
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Authentication failed')),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text('Login failed: ${e.toString()}')),
       );
     } finally {
       setState(() => isLoading = false);
@@ -201,11 +125,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               SizedBox(height: 30),
               Text(
                 'Login to NSBM Go',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
               ),
               SizedBox(height: 20),
               Row(
@@ -220,26 +140,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               SizedBox(height: 20),
               SlideTransition(
                 position: _slideAnimation,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildEmailField(),
-                ),
+                child: FadeTransition(opacity: _fadeAnimation, child: _buildEmailField()),
               ),
               SizedBox(height: 15),
               SlideTransition(
                 position: _slideAnimation,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildPasswordField(),
-                ),
+                child: FadeTransition(opacity: _fadeAnimation, child: _buildPasswordField()),
               ),
               SizedBox(height: 30),
               SlideTransition(
                 position: _slideAnimation,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildLoginButton(),
-                ),
+                child: FadeTransition(opacity: _fadeAnimation, child: _buildLoginButton()),
               ),
             ],
           ),
@@ -254,21 +165,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       style: ElevatedButton.styleFrom(
         backgroundColor: selectedUserType == userType ? Colors.green : Colors.grey[300],
         padding: EdgeInsets.symmetric(vertical: 15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       child: AnimatedSwitcher(
         duration: Duration(milliseconds: 200),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return ScaleTransition(scale: animation, child: child);
-        },
+        transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
         child: Text(
           text,
           key: ValueKey<int>(userType),
-          style: TextStyle(
-            color: selectedUserType == userType ? Colors.white : Colors.black,
-          ),
+          style: TextStyle(color: selectedUserType == userType ? Colors.white : Colors.black),
         ),
       ),
     );
@@ -277,17 +182,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget _buildEmailField() {
     String labelText;
     switch (selectedUserType) {
-      case 0:
-        labelText = 'Student Email';
-        break;
-      case 1:
-        labelText = 'Organizer Email';
-        break;
-      case 2:
-        labelText = 'Club Manager Email';
-        break;
-      default:
-        labelText = 'Email';
+      case 0: labelText = 'Student Email'; break;
+      case 1: labelText = 'Organizer Email'; break;
+      case 2: labelText = 'Club Manager Email'; break;
+      default: labelText = 'Email';
     }
 
     return TextField(
@@ -295,9 +193,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(Icons.email),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15.0), // Increased from default
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
         contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
       ),
       keyboardType: TextInputType.emailAddress,
@@ -312,14 +208,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         labelText: 'Password',
         prefixIcon: Icon(Icons.lock),
         suffixIcon: IconButton(
-          icon: Icon(
-            obscurePassword ? Icons.visibility_off : Icons.visibility,
-          ),
+          icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
           onPressed: () => setState(() => obscurePassword = !obscurePassword),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15.0), // Increased from default
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
         contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
       ),
     );
@@ -333,16 +225,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         onPressed: isLoading ? null : _login,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: isLoading
             ? CircularProgressIndicator(color: Colors.white)
-            : Text(
-          'LOGIN',
-          style: TextStyle(fontSize: 16, color: Colors.white),
-        ),
+            : Text('LOGIN', style: TextStyle(fontSize: 16, color: Colors.white)),
       ),
     );
   }
