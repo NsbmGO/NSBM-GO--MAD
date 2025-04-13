@@ -112,7 +112,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
-              "assets/people.png",
+              "assets/People.png",
               height: 24,
               color: Colors.black,
             ),

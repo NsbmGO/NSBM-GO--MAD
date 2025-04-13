@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
-              "assets/people.png",
+              "assets/People.png",
               height: 24,
               color: Colors.black,
             ),

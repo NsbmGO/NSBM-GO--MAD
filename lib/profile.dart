@@ -156,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
-              "assets/people.png",
+              "assets/People.png",
               height: 24,
               color: Colors.black,
             ),

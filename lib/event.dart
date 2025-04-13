@@ -401,7 +401,7 @@ class _NSBMHomePageState extends State<NSBMHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
-              "assets/people.png",
+              "assets/People.png",
               height: 24,
               color: Colors.black,
             ),
