@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart'; // Make sure to import your LoginScreen
 
 class ClubManagerPage extends StatefulWidget {
   final Map<String, dynamic> managerData;
 
-  const ClubManagerPage({Key? key, required this.managerData}) : super(key: key);
+  const ClubManagerPage({Key? key, required this.managerData})
+    : super(key: key);
 
   @override
   _ClubManagerPageState createState() => _ClubManagerPageState();
@@ -26,7 +28,7 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
     'ACTIVITY BASED CLUBS',
     'INTERNATIONAL CLUBS',
     'RELIGIOUS CLUBS',
-    'SPORTS CLUBS'
+    'SPORTS CLUBS',
   ];
 
   // Add logout method
@@ -72,9 +74,9 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
         'createdBy': widget.managerData['name'] ?? 'Unknown Manager',
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Club added successfully!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Club added successfully!')));
 
       _formKey.currentState!.reset();
       setState(() => _selectedClubType = null);
@@ -110,7 +112,10 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
 
     if (confirmDelete == true) {
       try {
-        await FirebaseFirestore.instance.collection('clubs').doc(clubId).delete();
+        await FirebaseFirestore.instance
+            .collection('clubs')
+            .doc(clubId)
+            .delete();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Club deleted successfully!')),
         );
@@ -147,11 +152,18 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
                   const Center(
                     child: Text(
                       'NSBM Club Details',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField('Club Name', _nameController, isRequired: true),
+                  _buildTextField(
+                    'Club Name',
+                    _nameController,
+                    isRequired: true,
+                  ),
                   const SizedBox(height: 12),
                   _buildClubTypeDropdown(),
                   const SizedBox(height: 12),
@@ -176,12 +188,15 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                        'Add Club',
-                        style: TextStyle(fontSize: 15),
-                      ),
+                      child:
+                          _isLoading
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : const Text(
+                                'Add Club',
+                                style: TextStyle(fontSize: 15),
+                              ),
                     ),
                   ),
                 ],
@@ -199,10 +214,11 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
             ),
             const SizedBox(height: 12),
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('clubs')
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
+              stream:
+                  FirebaseFirestore.instance
+                      .collection('clubs')
+                      .orderBy('createdAt', descending: true)
+                      .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -227,20 +243,25 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        leading: data['image'] != null && data['image'].isNotEmpty
-                            ? ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Image.network(
-                            data['image'],
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.group, size: 40),
-                          ),
-                        )
-                            : const Icon(Icons.group, size: 40),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        leading:
+                            data['image'] != null && data['image'].isNotEmpty
+                                ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.network(
+                                    data['image'],
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(Icons.group, size: 40),
+                                  ),
+                                )
+                                : const Icon(Icons.group, size: 40),
                         title: Text(
                           data['name'] ?? 'No name',
                           style: const TextStyle(fontSize: 15),
@@ -250,8 +271,16 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
                           style: const TextStyle(fontSize: 13),
                         ),
                         trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                          onPressed: () => _deleteClub(club.id, data['name'] ?? 'this club'),
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 20,
+                          ),
+                          onPressed:
+                              () => _deleteClub(
+                                club.id,
+                                data['name'] ?? 'this club',
+                              ),
                         ),
                       ),
                     );
@@ -271,17 +300,16 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
       decoration: InputDecoration(
         labelText: 'Club Type',
         labelStyle: const TextStyle(fontSize: 14),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
         ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      items: _clubTypes.map((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
+      items:
+          _clubTypes.map((String value) {
+            return DropdownMenuItem<String>(value: value, child: Text(value));
+          }).toList(),
       onChanged: (newValue) {
         setState(() {
           _selectedClubType = newValue;
@@ -291,27 +319,32 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {bool isRequired = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool isRequired = false,
+  }) {
     return TextFormField(
       controller: controller,
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontSize: 14),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
         ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      validator: isRequired
-          ? (value) {
-        if (value == null || value.isEmpty) {
-          return 'Required';
-        }
-        return null;
-      }
-          : null,
+      validator:
+          isRequired
+              ? (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Required';
+                }
+                return null;
+              }
+              : null,
     );
   }
 
@@ -324,10 +357,11 @@ class _ClubManagerPageState extends State<ClubManagerPage> {
         labelText: 'Description',
         labelStyle: const TextStyle(fontSize: 14),
         alignLabelWithHint: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
         ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'event.dart' as event_lib;
 import 'club.dart' as club_lib;
 import 'aboutus.dart' as aboutus_lib;
-import 'login.dart'; // Import the login screen
+import 'login.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -64,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
-            (Route<dynamic> route) => false,
+        (Route<dynamic> route) => false,
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -116,11 +118,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-          ? Center(child: Text(_errorMessage))
-          : _buildProfileContent(),
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : _errorMessage.isNotEmpty
+              ? Center(child: Text(_errorMessage))
+              : _buildProfileContent(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -128,23 +131,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset("assets/events_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/events_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Events",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/clubs_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/clubs_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Clubs",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/home_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/home_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/people.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/people.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Faculties",
           ),
           BottomNavigationBarItem(
-            icon: Image.asset("assets/profile_icon.png", height: 24, color: Colors.black),
+            icon: Image.asset(
+              "assets/profile_icon.png",
+              height: 24,
+              color: Colors.black,
+            ),
             label: "Profile",
           ),
         ],
@@ -154,14 +177,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileContent() {
     final dateOfBirth = (_studentData!['dateofbirth'] as Timestamp).toDate();
-    final formattedDate = '${dateOfBirth.day} ${_getMonthName(dateOfBirth.month)} ${dateOfBirth.year}';
+    final formattedDate =
+        '${dateOfBirth.day} ${_getMonthName(dateOfBirth.month)} ${dateOfBirth.year}';
 
     return SingleChildScrollView(
       child: Column(
         children: [
           // Profile Header with larger photo moved down
           Container(
-            padding: EdgeInsets.only(top: 20, bottom: 30, left: 20, right: 20), // Adjusted top padding
+            padding: EdgeInsets.only(
+              top: 20,
+              bottom: 30,
+              left: 20,
+              right: 20,
+            ), // Adjusted top padding
             decoration: BoxDecoration(
               color: Color(0xFFA8D5A1),
               borderRadius: BorderRadius.only(
@@ -173,29 +202,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Center(
                   child: CircleAvatar(
-                    radius: 80,  // Increased size
+                    radius: 80, // Increased size
                     backgroundColor: Colors.white,
-                    child: _studentData!['image'] != null && _studentData!['image'].isNotEmpty
-                        ? ClipOval(
-                      child: Image.network(
-                        _studentData!['image'],
-                        width: 150,  // Increased size
-                        height: 150, // Increased size
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                        : Icon(
-                      Icons.person,
-                      size: 80,  // Increased size
-                      color: Color(0xFFA8D5A1),
-                    ),
+                    child:
+                        _studentData!['image'] != null &&
+                                _studentData!['image'].isNotEmpty
+                            ? ClipOval(
+                              child: Image.network(
+                                _studentData!['image'],
+                                width: 150, // Increased size
+                                height: 150, // Increased size
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                            : Icon(
+                              Icons.person,
+                              size: 80, // Increased size
+                              color: Color(0xFFA8D5A1),
+                            ),
                   ),
                 ),
-                SizedBox(height: 25),  // Increased spacing
+                SizedBox(height: 25), // Increased spacing
                 Text(
                   _studentData!['name'] ?? 'No Name',
                   style: TextStyle(
-                    fontSize: 26,  // Slightly larger
+                    fontSize: 26, // Slightly larger
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -206,7 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,  // Made student ID bold
+                    fontWeight: FontWeight.bold, // Made student ID bold
                   ),
                 ),
               ],
@@ -215,7 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Profile Details
           Padding(
-            padding: EdgeInsets.all(25),  // Increased padding
+            padding: EdgeInsets.all(25), // Increased padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -258,45 +289,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String value,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),  // Increased spacing
+      margin: EdgeInsets.symmetric(vertical: 10), // Increased spacing
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),  // Slightly more rounded
+        borderRadius: BorderRadius.circular(12), // Slightly more rounded
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 2,
-            blurRadius: 6,  // Softer shadow
+            blurRadius: 6, // Softer shadow
             offset: Offset(0, 3),
           ),
         ],
       ),
       child: ListTile(
-        leading: Icon(icon, color: Color(0xFF000000), size: 32),  // Larger icon
+        leading: Icon(icon, color: Color(0xFF000000), size: 32), // Larger icon
         title: Text(
           title,
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
-            fontSize: 16,  // Slightly larger
+            fontSize: 16, // Slightly larger
           ),
         ),
         subtitle: Text(
           value,
           style: TextStyle(
-            fontSize: 18,  // Larger text
-            color: Colors.black87,  // Darker for better readability
+            fontSize: 18, // Larger text
+            color: Colors.black87, // Darker for better readability
           ),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),  // More padding
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 12,
+        ), // More padding
       ),
     );
   }
 
   String _getMonthName(int month) {
     const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
     return months[month - 1];
   }
