@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'event.dart' as event_lib;
 import 'club.dart' as club_lib;
 import 'aboutus.dart' as aboutus_lib;
-import 'login.dart';
+import 'login.dart'; // Import the login screen
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -12,6 +12,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   Map<String, dynamic>? _studentData;
   bool _isLoading = true;
   String _errorMessage = '';
@@ -24,29 +26,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _fetchStudentData() async {
-    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        setState(() {
+          _errorMessage = 'No user logged in';
+          _isLoading = false;
+        });
+        return;
+      }
 
-    setState(() {
-      _studentData = {
-        'name': 'Pulindu Thenura',
-        'studentid': 'NSBM/SE/2022/001',
-        'email': 'pulindu@example.com',
-        'intake': 'March 2022',
-        'degree': 'BSc (Hons) in Software Engineering',
-        'phoneno': '+94771234567',
-        'image': '', // Or insert a valid image URL here
-        'dateofbirth': DateTime(2002, 11, 4), // Replace with desired date
-      };
-      _isLoading = false;
-    });
+      final doc = await _firestore.collection('student').doc(user.uid).get();
+
+      if (!doc.exists) {
+        setState(() {
+          _errorMessage = 'Student data not found';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _studentData = doc.data();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error fetching data: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _logout() async {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-          (Route<dynamic> route) => false,
-    );
+    try {
+      await _auth.signOut();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+            (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing out: ${e.toString()}')),
+      );
+    }
   }
 
   void _onItemTapped(int index) {
@@ -84,7 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: false, // This removes the back button
         actions: [
           IconButton(
             icon: Icon(Icons.logout, color: Colors.red),
@@ -129,14 +153,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileContent() {
-    final dateOfBirth = _studentData!['dateofbirth'] as DateTime;
+    final dateOfBirth = (_studentData!['dateofbirth'] as Timestamp).toDate();
     final formattedDate = '${dateOfBirth.day} ${_getMonthName(dateOfBirth.month)} ${dateOfBirth.year}';
 
     return SingleChildScrollView(
       child: Column(
         children: [
+          // Profile Header with larger photo moved down
           Container(
-            padding: EdgeInsets.only(top: 20, bottom: 30, left: 20, right: 20),
+            padding: EdgeInsets.only(top: 20, bottom: 30, left: 20, right: 20), // Adjusted top padding
             decoration: BoxDecoration(
               color: Color(0xFFA8D5A1),
               borderRadius: BorderRadius.only(
@@ -148,29 +173,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Center(
                   child: CircleAvatar(
-                    radius: 80,
+                    radius: 80,  // Increased size
                     backgroundColor: Colors.white,
                     child: _studentData!['image'] != null && _studentData!['image'].isNotEmpty
                         ? ClipOval(
                       child: Image.network(
                         _studentData!['image'],
-                        width: 150,
-                        height: 150,
+                        width: 150,  // Increased size
+                        height: 150, // Increased size
                         fit: BoxFit.cover,
                       ),
                     )
                         : Icon(
                       Icons.person,
-                      size: 80,
+                      size: 80,  // Increased size
                       color: Color(0xFFA8D5A1),
                     ),
                   ),
                 ),
-                SizedBox(height: 25),
+                SizedBox(height: 25),  // Increased spacing
                 Text(
                   _studentData!['name'] ?? 'No Name',
                   style: TextStyle(
-                    fontSize: 26,
+                    fontSize: 26,  // Slightly larger
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -181,14 +206,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.bold,  // Made student ID bold
                   ),
                 ),
               ],
             ),
           ),
+
+          // Profile Details
           Padding(
-            padding: EdgeInsets.all(25),
+            padding: EdgeInsets.all(25),  // Increased padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -231,37 +258,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String value,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: EdgeInsets.symmetric(vertical: 10),  // Increased spacing
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12),  // Slightly more rounded
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 2,
-            blurRadius: 6,
+            blurRadius: 6,  // Softer shadow
             offset: Offset(0, 3),
           ),
         ],
       ),
       child: ListTile(
-        leading: Icon(icon, color: Color(0xFF000000), size: 32),
+        leading: Icon(icon, color: Color(0xFF000000), size: 32),  // Larger icon
         title: Text(
           title,
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
-            fontSize: 16,
+            fontSize: 16,  // Slightly larger
           ),
         ),
         subtitle: Text(
           value,
           style: TextStyle(
-            fontSize: 18,
-            color: Colors.black87,
+            fontSize: 18,  // Larger text
+            color: Colors.black87,  // Darker for better readability
           ),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),  // More padding
       ),
     );
   }
