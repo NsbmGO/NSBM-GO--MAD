@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'login.dart'; // Make sure this import points to your LoginScreen file
 
 class EventForm extends StatefulWidget {
   final Map<String, dynamic> organizerData;
@@ -110,10 +111,7 @@ class _EventFormState extends State<EventForm> {
 
     if (confirmDelete == true) {
       try {
-        await FirebaseFirestore.instance
-            .collection('events')
-            .doc(eventId)
-            .delete();
+        await FirebaseFirestore.instance.collection('events').doc(eventId).delete();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Event deleted successfully!')),
         );
@@ -168,10 +166,7 @@ class _EventFormState extends State<EventForm> {
                   const Center(
                     child: Text(
                       'NSBM Special Event Details',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -180,11 +175,7 @@ class _EventFormState extends State<EventForm> {
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 20),
-                  _buildTextField(
-                    'Event Name',
-                    _nameController,
-                    isRequired: true,
-                  ),
+                  _buildTextField('Event Name', _nameController, isRequired: true),
                   const SizedBox(height: 20),
                   _buildDateTimeField(context),
                   const SizedBox(height: 20),
@@ -205,18 +196,12 @@ class _EventFormState extends State<EventForm> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child:
-                          _isLoading
-                              ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                              : const Text(
-                                'Create Event',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                        'Create Event',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
                     ),
                   ),
                 ],
@@ -234,15 +219,11 @@ class _EventFormState extends State<EventForm> {
             ),
             const SizedBox(height: 10),
             StreamBuilder<QuerySnapshot>(
-              stream:
-                  FirebaseFirestore.instance
-                      .collection('events')
-                      .where(
-                        'organizermail',
-                        isEqualTo: widget.organizerData['email'],
-                      )
-                      .orderBy('createdAt', descending: true)
-                      .snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('events')
+                  .where('organizermail', isEqualTo: widget.organizerData['email'])
+                  .orderBy('createdAt', descending: true)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -267,37 +248,30 @@ class _EventFormState extends State<EventForm> {
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       child: ListTile(
-                        leading:
-                            data['image'] != null && data['image'].isNotEmpty
-                                ? Image.network(
-                                  data['image'],
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (context, error, stackTrace) =>
-                                          const Icon(Icons.event),
-                                )
-                                : const Icon(Icons.event),
+                        leading: data['image'] != null && data['image'].isNotEmpty
+                            ? Image.network(
+                          data['image'],
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.event),
+                        )
+                            : const Icon(Icons.event),
                         title: Text(data['name'] ?? 'No name'),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               DateFormat('d MMMM yyyy, h:mm a').format(
-                                (data['dateandtime'] as Timestamp).toDate(),
-                              ),
+                                  (data['dateandtime'] as Timestamp).toDate()),
                             ),
                             Text(data['venue'] ?? 'No venue'),
                           ],
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed:
-                              () => _deleteEvent(
-                                event.id,
-                                data['name'] ?? 'this event',
-                              ),
+                          onPressed: () => _deleteEvent(event.id, data['name'] ?? 'this event'),
                         ),
                       ),
                     );
@@ -311,15 +285,15 @@ class _EventFormState extends State<EventForm> {
     );
   }
 
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller, {
-    bool isRequired = false,
-  }) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool isRequired = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 5),
         TextFormField(
           controller: controller,
@@ -327,15 +301,14 @@ class _EventFormState extends State<EventForm> {
             border: const OutlineInputBorder(),
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),
           ),
-          validator:
-              isRequired
-                  ? (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'This field is required';
-                    }
-                    return null;
-                  }
-                  : null,
+          validator: isRequired
+              ? (value) {
+            if (value == null || value.isEmpty) {
+              return 'This field is required';
+            }
+            return null;
+          }
+              : null,
         ),
       ],
     );
@@ -362,9 +335,7 @@ class _EventFormState extends State<EventForm> {
               children: [
                 Text(
                   _selectedDateTime != null
-                      ? DateFormat(
-                        'd MMMM yyyy, h:mm a',
-                      ).format(_selectedDateTime!)
+                      ? DateFormat('d MMMM yyyy, h:mm a').format(_selectedDateTime!)
                       : 'Select date and time',
                 ),
                 const Icon(Icons.calendar_today),
